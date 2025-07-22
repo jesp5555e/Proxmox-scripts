@@ -20,9 +20,25 @@ if [ -f "$NEW_CONF" ]; then
     exit 1
 fi
 
-# Stop VM
-echo "🔻 Stopper VM $OLD_ID..."
-qm stop "$OLD_ID"
+# Forsøg at lukke VM korrekt ned
+echo "🔻 Forsøger at lukke VM $OLD_ID ned..."
+qm shutdown "$OLD_ID"
+
+# Vent op til 10 minutter (600 sekunder) på at VM er slukket
+WAIT_TIME=0
+TIMEOUT=600
+while qm status "$OLD_ID" | grep -q "status: running"; do
+    if [ "$WAIT_TIME" -ge "$TIMEOUT" ]; then
+        echo "⏱️ Timeout! VM $OLD_ID lukker ikke ned – tvinger stop med 'qm stop'..."
+        qm stop "$OLD_ID"
+        break
+    fi
+    echo "⏳ Venter på at VM lukker ned... (${WAIT_TIME}s)"
+    sleep 1
+    WAIT_TIME=$((WAIT_TIME + 1))
+done
+
+echo "✅ VM er nu stoppet."
 
 # Flyt konfigurationsfil
 echo "📄 Flytter konfiguration..."

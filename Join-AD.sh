@@ -3,10 +3,13 @@
 # Usage: ./join-ad.sh <DOMAIN> <AD-USER>
 
 set -euo pipefail
+# ===> Spørg efter DOMAIN og AD-USER
+read -rp "Indtast AD DOMAIN (fx ad.example.com): " DOMAIN_INPUT
+read -rp "Indtast AD bruger (fx administrator): " USER_INPUT
 
-DOMAIN_LOWER=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-DOMAIN_UPPER=$(echo "$1" | tr '[:lower:]' '[:upper:]')
-JOIN_USER="$2"
+DOMAIN_LOWER=$(echo "$DOMAIN_INPUT" | tr '[:upper:]' '[:lower:]')
+DOMAIN_UPPER=$(echo "$DOMAIN_INPUT" | tr '[:lower:]' '[:upper:]')
+JOIN_USER="$USER_INPUT"
 
 BACKUP_DIR="/root/ad-backup-$(date +%F-%H%M%S)"
 

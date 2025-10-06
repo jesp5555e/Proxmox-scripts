@@ -4,8 +4,9 @@
 
 set -euo pipefail
 # ===> Spørg efter DOMAIN og AD-USER
-read -rp "Indtast AD DOMAIN (fx ad.example.com): " DOMAIN_INPUT
-read -rp "Indtast AD bruger (fx administrator): " USER_INPUT
+echo "=== Proxmox Join AD ==="
+read -p "Indtast AD DOMAIN (fx ad.example.com): " DOMAIN_INPUT
+read -p "Indtast AD bruger (fx administrator): " USER_INPUT
 
 DOMAIN_LOWER=$(echo "$DOMAIN_INPUT" | tr '[:upper:]' '[:lower:]')
 DOMAIN_UPPER=$(echo "$DOMAIN_INPUT" | tr '[:lower:]' '[:upper:]')

@@ -1,24 +1,16 @@
 #!/bin/bash
-# join-ad.sh - Join Proxmox (Debian) node to Active Directory med SSSD + realmd
-# Kan køres direkte fra GitHub:
+# join-ad.sh - Join Proxmox (Debian) node to Active Directory with SSSD + realmd
+# Kan køres direkte med:
 # bash -c "$(wget -qLO - https://github.com/jesp5555e/Proxmox-scripts/raw/refs/heads/main/Join-AD.sh)"
 
 set -euo pipefail
 
-# ===> Tjek om vi kører som root
-if [[ $EUID -ne 0 ]]; then
-    echo "Dette script skal køres som root."
-    exit 1
-fi
+# === Brugerinput ===
+read -rp "Indtast dit AD-domain (f.eks. example.local): " DOMAIN
+read -rp "Indtast AD-brugernavn med rettigheder til at joine (f.eks. administrator): " JOIN_USER
 
-# ===> Spørg efter domain og AD-bruger
-echo "=== Join Proxmox til Active Directory ==="
-read -rp "Indtast AD DOMAIN (fx ad.example.com): " DOMAIN_INPUT
-read -rp "Indtast AD bruger (fx administrator): " USER_INPUT
-
-DOMAIN_LOWER=$(echo "$DOMAIN_INPUT" | tr '[:upper:]' '[:lower:]')
-DOMAIN_UPPER=$(echo "$DOMAIN_INPUT" | tr '[:lower:]' '[:upper:]')
-JOIN_USER="$USER_INPUT"
+DOMAIN_LOWER=$(echo "$DOMAIN" | tr '[:upper:]' '[:lower:]')
+DOMAIN_UPPER=$(echo "$DOMAIN" | tr '[:lower:]' '[:upper:]')
 
 BACKUP_DIR="/root/ad-backup-$(date +%F-%H%M%S)"
 
@@ -29,27 +21,22 @@ for f in /etc/sssd/sssd.conf /etc/krb5.conf /etc/nsswitch.conf /etc/pam.d/common
 done
 
 echo "===> Installerer nødvendige pakker..."
-apt update -qq
+apt update
 DEBIAN_FRONTEND=noninteractive apt install -y \
     realmd sssd sssd-tools adcli samba-common-bin \
     oddjob oddjob-mkhomedir packagekit \
-    libnss-sss libpam-sss krb5-user >/dev/null
+    libnss-sss libpam-sss krb5-user
 
-systemctl enable --now oddjobd >/dev/null 2>&1 || true
+systemctl enable --now oddjobd
 
 echo "===> Tester DNS og tid..."
-if ! host -t SRV _ldap._tcp."$DOMAIN_LOWER" >/dev/null; then
-    echo "DNS lookup fejlede for domænet $DOMAIN_LOWER"
-    exit 1
+host -t SRV _ldap._tcp."$DOMAIN_LOWER" || { echo "❌ DNS lookup fejlede for $DOMAIN_LOWER"; exit 1; }
+if ! timedatectl status | grep -q "System clock synchronized: yes"; then
+    echo "⚠️  ADVARSEL: Systemuret er muligvis ikke synkroniseret!"
 fi
-timedatectl status | grep -q "System clock synchronized: yes" || \
-    echo "ADVARSEL: Systemtid er måske ikke synkroniseret!"
 
 echo "===> Joiner domæne $DOMAIN_LOWER som bruger $JOIN_USER"
-realm join --verbose --user="$JOIN_USER" "$DOMAIN_LOWER" || {
-    echo "Join fejlede! Tjek dine legitimationsoplysninger og DNS."
-    exit 1
-}
+realm join --verbose --user="$JOIN_USER" "$DOMAIN_LOWER" || { echo "❌ Join fejlede"; exit 1; }
 
 echo "===> Opretter /etc/sssd/sssd.conf"
 cat >/etc/sssd/sssd.conf <<EOF
@@ -75,7 +62,7 @@ EOF
 chmod 600 /etc/sssd/sssd.conf
 systemctl restart sssd
 
-echo "===> Opdaterer /etc/nsswitch.conf"
+echo "===> Tilføjer sss til /etc/nsswitch.conf"
 sed -i 's/^passwd:.*/passwd:         compat sss/' /etc/nsswitch.conf
 sed -i 's/^group:.*/group:          compat sss/' /etc/nsswitch.conf
 sed -i 's/^shadow:.*/shadow:         compat sss/' /etc/nsswitch.conf
@@ -85,15 +72,14 @@ grep -q pam_mkhomedir.so /etc/pam.d/common-session || \
     echo "session required pam_mkhomedir.so skel=/etc/skel umask=077" >> /etc/pam.d/common-session
 
 echo "===> Tester brugeropslag..."
-if ! id "$JOIN_USER@$DOMAIN_LOWER" >/dev/null 2>&1; then
-    echo "OBS: id lookup fejlede - tjek sssd logs (journalctl -u sssd)"
+if ! id "$JOIN_USER@$DOMAIN_LOWER" &>/dev/null; then
+    echo "⚠️  OBS: id lookup fejlede - tjek sssd logs med: journalctl -u sssd -xe"
 fi
 
 echo ""
 echo "✅ Konfiguration færdig!"
-echo "Backup gemt i: $BACKUP_DIR"
-echo "Test med:"
-echo "  id <AD-BRUGER>"
-echo "  getent passwd <AD-BRUGER>"
-echo "  getent group <AD-GRUPPE>"
-echo ""
+echo "📦 Backup gemt i: $BACKUP_DIR"
+echo "🧪 Test med:"
+echo "   id <AD-BRUGER>"
+echo "   getent passwd <AD-BRUGER>"
+echo "   getent group <AD-GRUPPE>"

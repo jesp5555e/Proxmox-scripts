@@ -4,6 +4,7 @@
 read -p "Indtast VM OVA fil lokation: " OVA_FILE #eksempel: /mnt/pve/ISO-Jesper/template/iso/20250108T095845Z - Ubuntu 22.04 to XO.ova
 read -p "Indtast VM ID: " VM_ID #eksempel: 100
 read -p "Indtast VM navn: " VM_NAME #eksempel: Ubuntu-to-docker-and-guacamole
+read -p "Indtast VM ram i MB" Ram
 read -p "Indtast den storage VM'en skal brueg: " STORAGE #eksempel: FastZFS
 
 # Kontroller, at OVA-filen eksisterer
@@ -34,7 +35,7 @@ qemu-img convert -f vmdk -O qcow2 "$VMDK_FILE" "$QCOW2_FILE"
 # Opret en ny VM i Proxmox
 echo "Creating VM $VM_ID..."
 pct create $VM_ID "$QCOW2_FILE" --storage $STORAGE
-qm create $VM_ID --name "$VM_NAME" --memory 2048 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci --boot c --ostype l26
+qm create $VM_ID --name "$VM_NAME" --memory $Ram --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci --boot c --ostype l26
 
 # Upload QCOW2 til Proxmox storage
 echo "Uploading disk to Proxmox storage..."

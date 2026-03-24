@@ -45,7 +45,10 @@ description
 msg_info "Installing dependencies"
 
 $STD apt update
-$STD apt install -y python3-pip python3-wheel qemu-system-x86 qemu-utils docker.io gnupg libpcap-dev
+$STD apt full-upgrade -y
+$STD apt --fix-broken install -y
+
+$STD apt install -y python3-pip python3-wheel qemu-system-x86 qemu-utils docker.io libpcap-dev pipx python3-full
 
 msg_ok "Dependencies installed"
 

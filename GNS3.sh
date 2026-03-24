@@ -45,27 +45,13 @@ description
 msg_info "Installing dependencies"
 
 $STD apt update
-$STD apt install -y \
-  python3 \
-  python3-pip \
-  python3-setuptools \
-  python3-wheel \
-  dynamips \
-  ubridge \
-  qemu-system-x86 \
-  qemu-utils \
-  git \
-  docker.io \
-  ca-certificates \
-  curl \
-  gnupg \
-  lsb-release
+$STD apt install -y python3 python3-pip python3-setuptools python3-wheel qemu-system-x86 qemu-utils git docker.io ca-certificates curl gnupg lsb-release bridge-utils libpcap-dev
 
 msg_ok "Dependencies installed"
 
 msg_info "Installing GNS3 Server"
 
-$STD pip3 install gns3-server gns3-gui
+$STD pip3 install gns3-server
 
 mkdir -p /opt/gns3
 mkdir -p /var/log/gns3

@@ -33,7 +33,7 @@ function update_script() {
   msg_info "Updating ${APP}"
   $STD apt update
   $STD apt -y upgrade
-  $STD pip3 install --upgrade gns3-server gns3-gui
+  $STD pip3 install --upgrade gns3-server
   msg_ok "Updated ${APP}"
   exit
 }
@@ -45,7 +45,7 @@ description
 msg_info "Installing dependencies"
 
 $STD apt update
-$STD apt install -y python3 python3-pip python3-setuptools python3-wheel qemu-system-x86 qemu-utils git docker.io ca-certificates curl gnupg lsb-release bridge-utils libpcap-dev
+$STD apt install -y python3-pip python3-wheel qemu-system-x86 qemu-utils docker.io gnupg libpcap-dev
 
 msg_ok "Dependencies installed"
 

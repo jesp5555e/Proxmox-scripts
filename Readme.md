@@ -17,3 +17,8 @@ Hent og kør leave AD Script
 ```bash
 bash -c "$(wget -qLO - https://github.com/jesp5555e/Proxmox-scripts/raw/refs/heads/main/Leave-AD.sh)"
 ```
+
+Hent og kør GNS3 Proxmox Helper Script (+Update)
+```bash
+bash -c "$(wget -qLO - https://github.com/jesp5555e/Proxmox-scripts/raw/refs/heads/main/GNS3.sh)"
+```

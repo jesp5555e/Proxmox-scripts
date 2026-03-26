@@ -57,11 +57,11 @@ $STD apt install -y python3-pip python3-wheel python3-full pipx libpcap-dev
 
 msg_info "Installing QEMU separately (fix for virtiofsd conflict)"
 
-$STD apt install -y qemu-system-x86 qemu-utils || {
-  msg_warn "QEMU install failed, retrying with full upgrade"
-  $STD apt full-upgrade -y
-  $STD apt install -y qemu-system-x86 qemu-utils
-}
+echo "deb http://deb.debian.org/debian bookworm-backports main" >> /etc/apt/sources.list
+
+$STD apt update
+
+$STD apt install -y -t bookworm-backports qemu-system-x86 qemu-utils
 
 msg_info "Installing Docker"
 

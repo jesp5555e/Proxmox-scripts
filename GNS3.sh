@@ -44,11 +44,28 @@ description
 
 msg_info "Installing dependencies"
 
+msg_info "Fixing package state"
+
 $STD apt update
-$STD apt full-upgrade -y
 $STD apt --fix-broken install -y
 
-$STD apt install -y python3-pip python3-wheel qemu-system-x86 qemu-utils docker.io libpcap-dev pipx python3-full
+msg_ok "Package state fixed"
+
+msg_info "Installing base dependencies"
+
+$STD apt install -y python3-pip python3-wheel python3-full pipx libpcap-dev
+
+msg_info "Installing QEMU separately (fix for virtiofsd conflict)"
+
+$STD apt install -y qemu-system-x86 qemu-utils || {
+  msg_warn "QEMU install failed, retrying with full upgrade"
+  $STD apt full-upgrade -y
+  $STD apt install -y qemu-system-x86 qemu-utils
+}
+
+msg_info "Installing Docker"
+
+$STD apt install -y docker.io
 
 msg_ok "Dependencies installed"
 

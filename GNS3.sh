@@ -57,7 +57,7 @@ $STD apt install -y python3-pip python3-wheel python3-full pipx libpcap-dev
 
 msg_info "Installing QEMU separately (fix for virtiofsd conflict)"
 
-echo "deb http://deb.debian.org/debian bookworm-backports main" >> /etc/apt/sources.list
+$STD echo "deb http://deb.debian.org/debian bookworm-backports main" >> /etc/apt/sources.list
 
 $STD apt update
 
@@ -73,14 +73,14 @@ msg_info "Installing GNS3 Server"
 
 $STD pip3 install gns3-server
 
-mkdir -p /opt/gns3
-mkdir -p /var/log/gns3
+$STD mkdir -p /opt/gns3
+$STD mkdir -p /var/log/gns3
 
 msg_ok "GNS3 installed"
 
 msg_info "Creating service"
 
-cat <<EOF >/etc/systemd/system/gns3.service
+$STD cat <<EOF >/etc/systemd/system/gns3.service
 [Unit]
 Description=GNS3 Server
 After=network.target
@@ -95,9 +95,9 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
-systemctl daemon-reload
-systemctl enable gns3
-systemctl start gns3
+$STD systemctl daemon-reload
+$STD systemctl enable gns3
+$STD systemctl start gns3
 
 msg_ok "GNS3 Server started"
 
